@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>CSV to JSON</title>
+  <style>
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      background: #f7f1e5;
+      color: #453b30;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+    }
+
+    main {
+      width: min(90%, 600px);
+      padding: 2rem;
+      border: 1px solid #e8ddca;
+      border-radius: 12px;
+      background: #fffdf8;
+      text-align: center;
+    }
+
+    input {
+      margin: 1rem 0;
+      font: inherit;
+    }
+
+    pre {
+      overflow-x: auto;
+      padding: 1rem;
+      border-radius: 8px;
+      background: #f7f1e5;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>CSV to JSON Converter</h1>
+    <p>Name: Hannah Marie Martinez</p>
+    <p>Schedule: TTh 6:00 - 8:30PM </p>
+
+    <input type="file" id="file" accept=".csv">
+    <pre id="output"></pre>
+  </main>
+
+  <script>
+    var programs = {
+      "BSIT": "Bachelor of Science in Information Technology",
+      "BSCS": "Bachelor of Science in Computer Science",
+      "BSIS": "Bachelor of Science in Information Systems",
+      "BSCPE": "Bachelor of Science in Computer Engineering"
+    };
+
+    function capitalize(s) {
+      return s.trim().toLowerCase().split(/\s+/).map(function (w) {
+        return w.charAt(0).toUpperCase() + w.slice(1);
+      }).join(" ");
+    }
+
+    document.getElementById("file").onchange = function (e) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        var lines = reader.result.trim().split(/\r?\n/);
+        var headers = lines[0].split(",").map(function (h) { return h.trim(); });
+        var result = [];
+
+        for (var i = 1; i < lines.length; i++) {
+          var values = lines[i].split(",");
+          var row = {};
+          for (var j = 0; j < headers.length; j++) {
+            row[headers[j]] = (values[j] || "").trim();
+          }
+
+          var code = row.course.toUpperCase();
+          result.push({                                                             // TRANSFORMATION RULES list just to be suree
+            studentId: parseInt(row.student_id),                                    // convert string to integer
+            firstName: capitalize(row.first_name),                                  // capitalize first letter
+            lastName: capitalize(row.last_name),                                    // capitalize first letter
+            program: programs[code] || row.course,                                  // convert to full program name
+            yearLevel: parseInt(row.year_level),                                    // convert string to integer
+            emailAddress: row.email.toLowerCase(),                                  // convert to lowercase
+            outstandingBalance: Number(parseFloat(row.tuition_balance).toFixed(2))  // convert to decimal with 2 decimal places
+          });
+        }
+
+        document.getElementById("output").textContent = JSON.stringify(result, null, 4);
+      };
+      reader.readAsText(e.target.files[0]);
+    };
+  </script>
+</body>
+</html>
